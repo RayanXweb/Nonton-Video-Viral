@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Video Sync Download Manager</title>
+
+<style>
+
+body{
+background:#0b0b0b;
+font-family:Arial;
+color:white;
+padding:30px;
+}
+
+.container{
+max-width:1200px;
+margin:auto;
+}
+
+h1{
+text-align:center;
+color:#ff00cc;
+margin-bottom:30px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+gap:20px;
+}
+
+.card{
+background:#111;
+border-radius:10px;
+overflow:hidden;
+box-shadow:0 0 15px rgba(255,0,150,0.3);
+}
+
+.thumbnail{
+width:100%;
+height:150px;
+object-fit:cover;
+}
+
+.content{
+padding:15px;
+}
+
+button{
+background:#ff0088;
+border:none;
+padding:10px 16px;
+border-radius:6px;
+color:white;
+cursor:pointer;
+}
+
+button:hover{
+background:#ff00cc;
+}
+
+.progress{
+background:#222;
+height:10px;
+border-radius:20px;
+overflow:hidden;
+margin-top:10px;
+}
+
+.bar{
+height:100%;
+width:0%;
+background:linear-gradient(90deg,#ff00cc,#ff0080);
+}
+
+.info{
+font-size:12px;
+margin-top:5px;
+opacity:0.8;
+}
+
+.link{
+font-size:12px;
+margin-top:6px;
+color:#00eaff;
+display:none;
+word-break:break-all;
+}
+
+.sync{
+margin-top:30px;
+padding:12px 20px;
+}
+
+.telegram{
+position:fixed;
+bottom:20px;
+right:20px;
+background:#0088cc;
+padding:14px 18px;
+border-radius:30px;
+text-decoration:none;
+color:white;
+font-weight:bold;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>NONTON VIDEO BOKEP FULL</h1>
+<p>otomatis upgrade harian</p>
+<div class="grid" id="list"></div>
+
+<center>
+<button class="sync" onclick="syncVideo()">Sync Video</button>
+</center>
+
+</div>
+
+<a class="telegram" href="https://t.me/+JETD3Xsnak1kNTVl" target="_blank">
+Join Telegram
+</a>
+
+<script>
+
+let downloads=[]
+let intervals={}
+
+/* =====================
+THUMBNAIL LIST
+===================== */
+
+const thumbnails=[
+
+"https://image2url.com/r2/default/images/1774416988465-628b6039-df5d-4dda-9574-acda827212c9.jpg",
+"https://image2url.com/r2/default/images/1774416879360-af99276c-f986-4ee8-b6b9-019c52382309.jpg",
+"https://image2url.com/r2/default/images/1774416850517-9d506a22-f7c6-4cda-ae8a-d5297cb28ba6.jpg",
+"https://image2url.com/r2/default/images/1774416818910-0b72b4f1-fe88-497e-9d67-346004008f18.jpg",
+"https://image2url.com/r2/default/images/1774416803105-dad12e8a-612e-4705-8875-21554b55ef33.jpg",
+"https://image2url.com/r2/default/images/1774416775715-e8a5afa8-ef42-4222-bfb6-b737994b542c.jpg",
+"https://image2url.com/r2/default/images/1774416742549-26023e57-9537-4c55-ab65-08792a6b730f.jpg",
+"https://image2url.com/r2/default/images/1774416725971-2cb8762d-7eea-431d-a75f-67f3a646bd91.jpg",
+"https://image2url.com/r2/default/images/1774417352054-5d3c9588-f3c0-4bf1-8e8e-26f5b6e71b4c.jpg",
+"https://image2url.com/r2/default/images/1774417288750-2db918c2-e343-4773-804b-0061faca79ed.jpg"
+
+]
+
+/* =====================
+DOWNLOAD URL
+===================== */
+
+const urls=[
+
+"https://example.com/video1.mp4",
+"https://uc-share.com/s/3a6212ce611e4?la=id",
+"https://uc-share.com/s/98864194181e4?la=id",
+"https://uc-share.com/s/03e6920cf9424?la=id",
+"https://uc-share.com/s/7954eedfa3fc4?la=id",
+"https://uc-share.com/s/2dd603e7fb1d4?la=id",
+"https://uc-share.com/s/b1e8ac6399c34?la=id",
+"https://uc-share.com/s/90a77e79fe004?la=id",
+"https://uc-share.com/s/d1ceccb7dcb34?la=id",
+"https://uc-share.com/s/94c538d146b34?la=id"
+
+]
+
+/* =====================
+GENERATE VIDEO
+===================== */
+
+function generateDownloads(){
+
+downloads=[]
+
+for(let i=0;i<10;i++){
+
+let size=Math.floor(Math.random()*990)+10
+
+downloads.push({
+
+name:"Video "+(i+1),
+size:size,
+downloaded:0,
+image:thumbnails[i],
+url:urls[i]
+
+})
+
+}
+
+render()
+
+}
+
+/* =====================
+RENDER UI
+===================== */
+
+function render(){
+
+let list=document.getElementById("list")
+
+list.innerHTML=""
+
+downloads.forEach((v,i)=>{
+
+list.innerHTML+=`
+
+<div class="card">
+
+<img class="thumbnail" src="${v.image}">
+
+<div class="content">
+
+<b>${v.name}</b> (${v.size} MB)
+
+<br><br>
+
+<button onclick="startDownload(${i})">Download</button>
+
+<div class="progress">
+<div class="bar" id="bar${i}"></div>
+</div>
+
+<div class="info" id="info${i}">
+0 / ${v.size} MB
+</div>
+
+<div class="link" id="link${i}">
+Download Link: <a href="${v.url}" target="_blank">${v.url}</a>
+</div>
+
+</div>
+
+</div>
+
+`
+
+})
+
+}
+
+/* =====================
+DOWNLOAD PROCESS
+===================== */
+
+function startDownload(i){
+
+let bar=document.getElementById("bar"+i)
+let info=document.getElementById("info"+i)
+let link=document.getElementById("link"+i)
+
+intervals[i]=setInterval(()=>{
+
+let speed=(Math.random()*2)+1
+
+downloads[i].downloaded+=speed
+
+if(downloads[i].downloaded>=downloads[i].size){
+
+downloads[i].downloaded=downloads[i].size
+clearInterval(intervals[i])
+
+link.style.display="block"
+
+/* AUTO OPEN DOWNLOAD */
+
+window.open(downloads[i].url,"_blank")
+
+}
+
+let percent=(downloads[i].downloaded/downloads[i].size)*100
+
+bar.style.width=percent+"%"
+
+let eta=((downloads[i].size-downloads[i].downloaded)/speed)
+
+info.innerHTML=
+
+downloads[i].downloaded.toFixed(1)+" / "+
+downloads[i].size+
+" MB | "+speed.toFixed(2)+" MB/s | ETA "+eta.toFixed(1)+"s"
+
+},1000)
+
+}
+
+/* =====================
+SYNC VIDEO
+===================== */
+
+function syncVideo(){
+
+intervals={}
+generateDownloads()
+
+}
+
+/* INIT */
+
+generateDownloads()
+
+</script>
+
+</body>
+</html>
