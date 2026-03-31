@@ -3,311 +3,254 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Video Sync Download Manager</title>
+<title>Video Manager Premium</title>
 
 <style>
+    /* Reset & Base */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-body{
-background:#0b0b0b;
-font-family:Arial;
-color:white;
-padding:30px;
-}
+    body {
+        background: #050505;
+        font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+        color: #fff;
+        overflow: hidden; /* Dikunci saat loading */
+    }
 
-.container{
-max-width:1200px;
-margin:auto;
-}
+    /* FULL SCREEN LOADING OVERLAY */
+    #loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(5, 5, 5, 0.8);
+        backdrop-filter: blur(20px); /* Efek Blur */
+        -webkit-backdrop-filter: blur(20px);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        transition: opacity 0.8s ease, visibility 0.8s;
+    }
 
-h1{
-text-align:center;
-color:#ff00cc;
-margin-bottom:30px;
-}
+    .loader-content {
+        text-align: center;
+        padding: 40px;
+        border: 1px solid rgba(255, 0, 204, 0.3);
+        border-radius: 20px;
+        background: rgba(20, 20, 20, 0.5);
+    }
 
-.grid{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-gap:20px;
-}
+    #timer {
+        font-size: 5rem;
+        font-weight: 900;
+        color: #ff00cc;
+        text-shadow: 0 0 20px rgba(255, 0, 204, 0.6);
+        font-family: monospace;
+        margin: 20px 0;
+    }
 
-.card{
-background:#111;
-border-radius:10px;
-overflow:hidden;
-box-shadow:0 0 15px rgba(255,0,150,0.3);
-}
+    .loader-text {
+        font-size: 1.2rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #888;
+    }
 
-.thumbnail{
-width:100%;
-height:150px;
-object-fit:cover;
-}
+    /* MAIN CONTENT */
+    .container {
+        max-width: 1300px;
+        margin: auto;
+        padding: 20px;
+        filter: blur(5px); /* Konten belakang sedikit blur saat awal */
+        transition: filter 0.8s ease;
+    }
 
-.content{
-padding:15px;
-}
+    header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding: 20px;
+    }
 
-button{
-background:#ff0088;
-border:none;
-padding:10px 16px;
-border-radius:6px;
-color:white;
-cursor:pointer;
-}
+    h1 {
+        font-size: 2.8rem;
+        font-weight: 900;
+        background: linear-gradient(90deg, #ff00cc, #3333ff, #ff00cc);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: textGradient 4s linear infinite;
+    }
 
-button:hover{
-background:#ff00cc;
-}
+    @keyframes textGradient { to { background-position: 200% center; } }
 
-.progress{
-background:#222;
-height:10px;
-border-radius:20px;
-overflow:hidden;
-margin-top:10px;
-}
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+    }
 
-.bar{
-height:100%;
-width:0%;
-background:linear-gradient(90deg,#ff00cc,#ff0080);
-}
+    .card {
+        background: #121212;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #222;
+        transition: 0.3s;
+    }
 
-.info{
-font-size:12px;
-margin-top:5px;
-opacity:0.8;
-}
+    .thumb-wrapper {
+        position: relative;
+        height: 170px;
+        background: #1a1a1a;
+    }
 
-.link{
-font-size:12px;
-margin-top:6px;
-color:#00eaff;
-display:none;
-word-break:break-all;
-}
+    .thumb-wrapper img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
 
-.sync{
-margin-top:30px;
-padding:12px 20px;
-}
+    .content { padding: 20px; }
 
-.telegram{
-position:fixed;
-bottom:20px;
-right:20px;
-background:#0088cc;
-padding:14px 18px;
-border-radius:30px;
-text-decoration:none;
-color:white;
-font-weight:bold;
-}
+    .v-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 18px; color: #efefef; }
 
+    button {
+        background: linear-gradient(45deg, #ff0088, #8800ff);
+        color: #fff; border: none; padding: 12px; width: 100%; border-radius: 8px;
+        font-weight: 800; cursor: pointer; text-transform: uppercase;
+    }
+
+    .prog-box { margin-top: 15px; display: none; }
+    .prog-bg { background: #222; height: 6px; border-radius: 10px; overflow: hidden; }
+    .prog-bar { height: 100%; width: 0%; background: #ff00cc; }
+
+    .link-ready { margin-top: 15px; text-align: center; display: none; font-size: 12px; }
+    .link-ready a { color: #00eaff; text-decoration: none; font-weight: bold; }
+
+    .tg-float {
+        position: fixed;
+        bottom: 25px;
+        right: 25px;
+        background: #0088cc;
+        color: white;
+        padding: 12px 25px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: bold;
+        z-index: 998;
+    }
 </style>
 </head>
-
 <body>
 
-<div class="container">
-
-<h1>NONTON VIDEO BOKEP FULL</h1>
-<p>otomatis upgrade harian</p>
-<div class="grid" id="list"></div>
-
-<center>
-<button class="sync" onclick="syncVideo()">Sync Video</button>
-</center>
-
+<div id="loading-screen">
+    <div class="loader-content">
+        <p class="loader-text">Sinkronisasi Database...</p>
+        <div id="timer">10</div>
+        <p style="color: #555; font-size: 0.8rem;">Mohon tunggu sebentar untuk akses video</p>
+    </div>
 </div>
 
-<a class="telegram" href="https://t.me/+JETD3Xsnak1kNTVl" target="_blank">
-Join Telegram
-</a>
+<div class="container" id="main-container">
+    <header>
+        <h1>VIDEO TERBARU</h1>
+        <p style="color:#666; letter-spacing: 2px;">UPDATE HARIAN</p>
+    </header>
+
+    <div class="grid" id="videoGrid"></div>
+</div>
+
+<a href="https://t.me/+JETD3Xsnak1kNTVl" class="tg-float" target="_blank">Join Telegram</a>
 
 <script>
-
-let downloads=[]
-let intervals={}
-
-/* =====================
-THUMBNAIL LIST
-===================== */
-
-const thumbnails=[
-
-"https://image2url.com/r2/default/images/1774416988465-628b6039-df5d-4dda-9574-acda827212c9.jpg",
-"https://image2url.com/r2/default/images/1774416879360-af99276c-f986-4ee8-b6b9-019c52382309.jpg",
-"https://image2url.com/r2/default/images/1774416850517-9d506a22-f7c6-4cda-ae8a-d5297cb28ba6.jpg",
-"https://image2url.com/r2/default/images/1774416818910-0b72b4f1-fe88-497e-9d67-346004008f18.jpg",
-"https://image2url.com/r2/default/images/1774416803105-dad12e8a-612e-4705-8875-21554b55ef33.jpg",
-"https://image2url.com/r2/default/images/1774416775715-e8a5afa8-ef42-4222-bfb6-b737994b542c.jpg",
-"https://image2url.com/r2/default/images/1774416742549-26023e57-9537-4c55-ab65-08792a6b730f.jpg",
-"https://image2url.com/r2/default/images/1774416725971-2cb8762d-7eea-431d-a75f-67f3a646bd91.jpg",
-"https://image2url.com/r2/default/images/1774417352054-5d3c9588-f3c0-4bf1-8e8e-26f5b6e71b4c.jpg",
-"https://image2url.com/r2/default/images/1774417288750-2db918c2-e343-4773-804b-0061faca79ed.jpg"
-
-]
-
-/* =====================
-DOWNLOAD URL
-===================== */
-
-const urls=[
-
-"https://example.com/video1.mp4",
-"https://uc-share.com/s/3a6212ce611e4?la=id",
-"https://uc-share.com/s/98864194181e4?la=id",
-"https://uc-share.com/s/03e6920cf9424?la=id",
-"https://uc-share.com/s/7954eedfa3fc4?la=id",
-"https://uc-share.com/s/2dd603e7fb1d4?la=id",
-"https://uc-share.com/s/b1e8ac6399c34?la=id",
-"https://uc-share.com/s/90a77e79fe004?la=id",
-"https://uc-share.com/s/d1ceccb7dcb34?la=id",
-"https://uc-share.com/s/94c538d146b34?la=id"
-
-]
-
-/* =====================
-GENERATE VIDEO
-===================== */
-
-function generateDownloads(){
-
-downloads=[]
-
-for(let i=0;i<10;i++){
-
-let size=Math.floor(Math.random()*990)+10
-
-downloads.push({
-
-name:"Video "+(i+1),
-size:size,
-downloaded:0,
-image:thumbnails[i],
-url:urls[i]
-
-})
-
-}
-
-render()
-
-}
-
-/* =====================
-RENDER UI
-===================== */
-
-function render(){
-
-let list=document.getElementById("list")
-
-list.innerHTML=""
-
-downloads.forEach((v,i)=>{
-
-list.innerHTML+=`
-
-<div class="card">
-
-<img class="thumbnail" src="${v.image}">
-
-<div class="content">
-
-<b>${v.name}</b> (${v.size} MB)
-
-<br><br>
-
-<button onclick="startDownload(${i})">Download</button>
-
-<div class="progress">
-<div class="bar" id="bar${i}"></div>
-</div>
-
-<div class="info" id="info${i}">
-0 / ${v.size} MB
-</div>
-
-<div class="link" id="link${i}">
-Download Link: <a href="${v.url}" target="_blank">${v.url}</a>
-</div>
-
-</div>
-
-</div>
-
-`
-
-})
-
-}
-
-/* =====================
-DOWNLOAD PROCESS
-===================== */
-
-function startDownload(i){
-
-let bar=document.getElementById("bar"+i)
-let info=document.getElementById("info"+i)
-let link=document.getElementById("link"+i)
-
-intervals[i]=setInterval(()=>{
-
-let speed=(Math.random()*2)+1
-
-downloads[i].downloaded+=speed
-
-if(downloads[i].downloaded>=downloads[i].size){
-
-downloads[i].downloaded=downloads[i].size
-clearInterval(intervals[i])
-
-link.style.display="block"
-
-/* AUTO OPEN DOWNLOAD */
-
-window.open(downloads[i].url,"_blank")
-
-}
-
-let percent=(downloads[i].downloaded/downloads[i].size)*100
-
-bar.style.width=percent+"%"
-
-let eta=((downloads[i].size-downloads[i].downloaded)/speed)
-
-info.innerHTML=
-
-downloads[i].downloaded.toFixed(1)+" / "+
-downloads[i].size+
-" MB | "+speed.toFixed(2)+" MB/s | ETA "+eta.toFixed(1)+"s"
-
-},1000)
-
-}
-
-/* =====================
-SYNC VIDEO
-===================== */
-
-function syncVideo(){
-
-intervals={}
-generateDownloads()
-
-}
-
-/* INIT */
-
-generateDownloads()
-
+    // TIMER LOGIC 15 * 60
+    let timeLeft = 10; // 15 Menit dalam detik
+    const timerDisplay = document.getElementById('timer');
+    const loadingScreen = document.getElementById('loading-screen');
+    const mainContainer = document.getElementById('main-container');
+
+    const countdown = setInterval(() => {
+        let minutes = Math.floor(timeLeft / 60);
+        let seconds = timeLeft % 60;
+
+        // Format 00:00
+        seconds = seconds < 10 ? '0' + seconds : seconds;
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+
+        timerDisplay.innerHTML = `${minutes}:${seconds}`;
+
+        if (timeLeft <= 0) {
+            clearInterval(countdown);
+            // Selesai Loading
+            loadingScreen.style.opacity = "0";
+            loadingScreen.style.visibility = "hidden";
+            mainContainer.style.filter = "none";
+            document.body.style.overflow = "auto";
+        }
+        timeLeft--;
+    }, 1000);
+
+    // VIDEO CONTENT LOGIC
+    const thumbnails = [
+        "https://image2url.com/r2/default/images/1774975511716-db064f73-722d-4b88-a37e-990102610f21.jpg",
+        "https://image2url.com/r2/default/images/1774975544837-c1875e8a-1afd-477c-9831-cab06bb0ecfe.jpg",
+        "https://image2url.com/r2/default/images/1774975567288-2aa2df1b-812f-4f70-adbc-5186a41554cc.jpg",
+        "https://image2url.com/r2/default/images/1774975601834-b0e5c850-a492-4084-80a0-a7070c177c23.jpg",
+        "https://image2url.com/r2/default/images/1774975643320-72b8bb5c-6b58-4859-8731-811ed5681e1b.jpg",
+        "https://image2url.com/r2/default/images/1774975762712-d2a2c0d4-1367-41ac-9da9-dd8efcff375f.jpg",
+        "https://image2url.com/r2/default/images/1774975984324-531a8356-a3f3-4548-974f-86d65c936e14.jpg",
+        "https://image2url.com/r2/default/images/1774976014611-8f506f9c-894a-4bff-a427-b4c81cc06993.jpg",
+        "https://image2url.com/r2/default/images/1774976051394-703d62bf-9a32-4017-b331-15302f1c51cf.jpg",
+        "https://image2url.com/r2/default/images/1774976081583-b1035d51-b93e-46fd-847e-4359640ca047.jpg"
+    ];
+
+    const urls = [
+        "video/1.mp4", "video/2.mp4", "video/3.mp4", "video/4.mp4", "video/5.mp4",
+        "video/6.mp4", "https://1024terabox.com/s/1j3EdsjJR8qzjIFDr7SWzxQ", "https://1024terabox.com/s/1WHM7ZQ4an_mYy_kT1Gzs2g", "https://1024terabox.com/s/1PzN2dk_nUU7fmfUDU5zUlg", "https://1024terabox.com/s/1T8NfOziMYuHI87y55ow_4g"
+    ];
+
+    function init() {
+        const grid = document.getElementById('videoGrid');
+        let html = '';
+        for(let i=0; i<10; i++) {
+            html += `
+            <div class="card">
+                <div class="thumb-wrapper"><img src="${thumbnails[i]}"></div>
+                <div class="content">
+                    <div class="v-title">Video Part ${i+1}</div>
+                    <button id="btn${i}" onclick="download(${i})">Ambil Video</button>
+                    <div class="prog-box" id="box${i}">
+                        <div class="prog-bg"><div class="prog-bar" id="bar${i}"></div></div>
+                    </div>
+                    <div class="link-ready" id="link${i}"><a href="${urls[i]}" target="_blank">Simpan File</a></div>
+                </div>
+            </div>`;
+        }
+        grid.innerHTML = html;
+    }
+
+    function download(i) {
+        const btn = document.getElementById('btn'+i);
+        const box = document.getElementById('box'+i);
+        const bar = document.getElementById('bar'+i);
+        const link = document.getElementById('link'+i);
+
+        btn.disabled = true;
+        btn.innerText = "Memproses...";
+        box.style.display = "block";
+
+        let p = 0;
+        let iv = setInterval(() => {
+            p += Math.random() * 10;
+            if(p >= 100) {
+                p = 100;
+                clearInterval(iv);
+                btn.innerText = "Tersimpan";
+                link.style.display = "block";
+                window.open(urls[i], "_blank");
+            }
+            bar.style.width = p + "%";
+        }, 300);
+    }
+
+    init();
 </script>
-
 </body>
 </html>
